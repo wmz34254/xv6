@@ -1,0 +1,9 @@
+Q1:Which other xv6 system call(s) could be made faster using this shared page? Explain how.
+Answer:
+以下xv6系统调用也可以通过共享页面的方式进行优化:
+getppid() - 获取父进程ID。可以在共享页面中维护父进程ID,用户程序直接读取而无需系统调用。
+getuid() - 获取用户ID。可以在共享页面中存储用户ID信息,用户程序直接读取。
+getgid() - 获取组ID。同样可以存储在共享页面中,避免系统调用。
+uptime() - 获取系统运行时间。可以在共享页面中存储系统启动时间,用户程序计算当前运行时间。
+date() - 获取系统日期时间。可以在共享页面中存储系统日期时间,避免每次都需要系统调用。
+uname() - 获取系统信息。系统信息也可以存储在共享页面中。
