@@ -132,32 +132,9 @@ static uint64 (*syscalls[])(void) = {
 [SYS_sysinfo] sys_sysinfo,
 };
 
-// the system call name index array
-static char* syscalls_name[] = {
-[SYS_fork]    "syscall fork",
-[SYS_exit]    "syscall exit",
-[SYS_wait]    "syscall wait",
-[SYS_pipe]    "syscall pipe",
-[SYS_read]    "syscall read",
-[SYS_kill]    "syscall kill",
-[SYS_exec]    "syscall exec",
-[SYS_fstat]   "syscall fstat",
-[SYS_chdir]   "syscall chdir",
-[SYS_dup]     "syscall dup",
-[SYS_getpid]  "syscall getpid",
-[SYS_sbrk]    "syscall sbrk",
-[SYS_sleep]   "syscall sleep",
-[SYS_uptime]  "syscall uptime",
-[SYS_open]    "syscall open",
-[SYS_write]   "syscall write",
-[SYS_mknod]   "syscall mknod",
-[SYS_unlink]  "syscall unlink",
-[SYS_link]    "syscall link",
-[SYS_mkdir]   "syscall mkdir",
-[SYS_close]   "syscall close",
-[SYS_trace]   "syscall trace",
-[SYS_sysinfo] "syscall sysinfo",
-};
+static char* syscall_names[] = {"fork", "exit", "wait", "pipe", "read", "kill", "exec",
+"fstat", "chdir", "dup", "getpid", "sbrk", "sleep", "uptime", "open", "write", "mknod", 
+"unlink", "link", "mkdir", "close", "trace", "sysinfo"};
 
 void
 syscall(void)
@@ -169,11 +146,14 @@ syscall(void)
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
-    uint64 a0 = syscalls[num]();
-    if ((p->mask >> num) & 0b1) {
-      printf("%d: %s -> %d\n", p->pid, syscalls_name[num], a0);
+    p->trapframe->a0 = syscalls[num]();
+    int pid = p->pid;
+    int mask = p->tracemask;
+    if((1 << num) & mask){
+	    char* name = syscall_names[num -1];
+	    int ret = p->trapframe->a0;
+	    printf("%d: syscall %s -> %d\n", pid, name, ret);
     }
-    p->trapframe->a0 = a0;
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);

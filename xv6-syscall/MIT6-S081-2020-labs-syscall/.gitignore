@@ -11,13 +11,11 @@ entryother
 initcode
 initcode.out
 kernelmemfs
+mkfs
 kernel/kernel
 user/usys.S
 .gdbinit
-.vscode
-.idea
-myapi.key
-*-handin.tar.gz
+*.zip
 xv6.out*
 .vagrant/
 submissions/

@@ -295,8 +295,8 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
-  // copy trace mask value
-  np->mask = p->mask;
+  np->tracemask = p->tracemask;
+
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
@@ -447,10 +447,12 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
+
   c->proc = 0;
   for(;;){
-    // Avoid deadlock by ensuring that devices can interrupt.
+    // The most recent process to run may have had interrupts
+    // turned off; enable them to avoid a deadlock if all
+    // processes are waiting.
     intr_on();
 
     for(p = proc; p < &proc[NPROC]; p++) {
@@ -524,8 +526,11 @@ forkret(void)
     // File system initialization must be run in the context of a
     // regular process (e.g., because it calls sleep), and thus cannot
     // be run from main().
-    first = 0;
     fsinit(ROOTDEV);
+
+    first = 0;
+    // ensure other cores see first=0.
+    __sync_synchronize();
   }
 
   usertrapret();
@@ -683,14 +688,14 @@ procdump(void)
   }
 }
 
-// used by sysinfo
 int
-proc_not_unsed_num(void)
+calcproc(void)
 {
-  int nproc = 0;
-  for (struct proc *p = proc; p < &proc[NPROC]; p++) {
-    if (p->state != UNUSED)
-      nproc++;
-  }
-  return nproc;
+  struct proc *p;
+  int i = 0;
+
+  for(p = proc; p < &proc[NPROC]; p++)
+    if(p->state != UNUSED)
+      i++;
+  return i;
 }

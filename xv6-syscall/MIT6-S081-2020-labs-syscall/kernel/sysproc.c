@@ -97,33 +97,24 @@ uint64
 sys_trace(void)
 {
   int mask;
-
+  
   argint(0, &mask);
-  struct proc *p = myproc();
-  p->mask = mask;
+  myproc()->tracemask = mask;
   return 0;
 }
 
 uint64
 sys_sysinfo(void)
 {
-  // user pointer to struct sysinfo
-  uint64 si_addr;
-
-  argaddr(0, &si_addr);
-  int nproc;
-  int freemem;
-
-  nproc = proc_not_unsed_num();
-  freemem = free_mem_num();
-
-  struct sysinfo sysinfo;
-  sysinfo.freemem = freemem;
-  sysinfo.nproc = nproc;
-
+  uint64 addr;
+  argaddr(0, &addr);
+    
+  struct sysinfo info;
+  info.freemem = (uint64)calcfree()*PGSIZE;
+  info.nproc = (uint64)calcproc();
+  
   struct proc *p = myproc();
-  if (copyout(p->pagetable, si_addr, (char *)&sysinfo, sizeof(sysinfo)) < 0)
-    return -1;
-
+  if(copyout(p->pagetable, addr, (char *)&info, sizeof(info)) < 0)
+      return -1;
   return 0;
 }

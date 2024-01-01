@@ -83,10 +83,6 @@ enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
 struct proc {
-  
-  // trace mask value
-  uint64 mask;
-
   struct spinlock lock;
 
   // p->lock must be held when using these:
@@ -108,4 +104,5 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int tracemask;
 };
